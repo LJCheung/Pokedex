@@ -24,51 +24,60 @@ class PokeGUI:
 
         # container for pokemon image frame
         self.pokeimg_frame = tk.Frame(self.root)
-        self.pokeimg_frame.place(relx=0.285, rely=0.28, relwidth=0.19, relheight=0.11, anchor='n')
+        self.pokeimg_frame.place(relx=0.285, rely=0.28, relwidth=0.19,
+                                 relheight=0.11, anchor='n')
 
         # label for pokemon image frame
-        self.pokeimg_label = tk.Label(self.pokeimg_frame, anchor='w', bg="#013df5")
+        self.pokeimg_label = tk.Label(self.pokeimg_frame, anchor='w',
+                                      bg="#013df5")
         # must keep a reference per https://effbot.org/tkinterbook/photoimage.htm
         self.pokeimg_label.image = ""
         self.pokeimg_label.place(relwidth=1, relheight=1)
 
         # container for info frame
         self.info_frame = tk.Frame(self.root)
-        self.info_frame.place(relx=0.55, rely=0.30, relwidth=0.32, relheight=0.1, anchor='n')
+        self.info_frame.place(relx=0.55, rely=0.30, relwidth=0.32,
+                              relheight=0.1, anchor='n')
 
         # label for info frame
-        self.info_label = tk.Label(self.info_frame, bg="#013df5", font=('Courier New', 14, 'bold'), anchor=tk.NW, justify='left')
+        self.info_label = tk.Label(self.info_frame, bg="#013df5",
+                                   font=('Courier New', 14, 'bold'),
+                                   anchor=tk.NW, justify='left')
         self.info_label.place(relwidth=1, relheight=1)
 
         # container for abilities frame
         self.abilities_frame = tk.Frame(self.root)
-        self.abilities_frame.place(relx=0.46, rely=0.39, relwidth=0.515, relheight=0.10, anchor='n')
+        self.abilities_frame.place(relx=0.46, rely=0.39, relwidth=0.515,
+                                   relheight=0.10, anchor='n')
 
         # label for abilities frame
-        self.abilities_label = tk.Label(self.abilities_frame, bg="#013df5", font=('Courier New', 14, 'bold'), anchor=tk.NW, justify='left', wraplength=220)
+        self.abilities_label = tk.Label(self.abilities_frame,
+                                        bg="#013df5",
+                                        font=('Courier New', 14,
+                                              'bold'), anchor=tk.NW,
+                                        justify='left', wraplength=220)
         self.abilities_label.place(relwidth=1, relheight=1)
 
         # container for text entry field
         self.mid_frame = tk.Frame(self.root, bg="#5ab16a")
-        self.mid_frame.place(relx=0.37, rely=0.685, relwidth=0.29, relheight=0.095, anchor='n')
+        self.mid_frame.place(relx=0.37, rely=0.685, relwidth=0.29,
+                             relheight=0.095, anchor='n')
 
-        self.entry = tk.Entry(self.mid_frame, font=('Courier New', 15), bg="#5ab16a", highlightthickness=0, justify="center")
+        self.entry = tk.Entry(self.mid_frame, font=('Courier New', 15),
+                              bg="#5ab16a", highlightthickness=0,
+                              justify="center")
         self.entry.place(relwidth=1, relheight=1)
 
         # container for search button
         self.lower_frame = tk.Frame(self.root)
-        self.lower_frame.place(relx=0.37, rely=0.80, relwidth=0.3, relheight=0.04, anchor='n')
+        self.lower_frame.place(relx=0.37, rely=0.80, relwidth=0.3,
+                               relheight=0.04, anchor='n')
 
-        self.button = tk.Button(self.lower_frame, text="Search", font=('Courier New', 15, "bold"), command=lambda: APIHandler.get_data(self, self.entry.get()))
+        self.button = tk.Button(self.lower_frame, text="Search",
+                                font=('Courier New', 15, "bold"),
+                                command=lambda: APIHandler.get_data(
+                                    self, self.entry.get()))
         self.button.place(relheight=1, relwidth=1)
-
-        # # container for error msg frame
-        # self.error_frame = tk.Frame(self.root)
-        # self.error_frame.place(relx=0.45, rely=0.29, relwidth=0.525, relheight=0.16, anchor='n')
-        #
-        # # label for error msg frame
-        # self.error_label = tk.Label(self.error_frame, font=('Courier New', 14), anchor=tk.NW, justify='left', wraplength=220)
-        # self.error_label.place(relwidth=1, relheight=1)
 
         # open window
         self.root.mainloop()
@@ -97,14 +106,17 @@ class APIHandler:
             response = requests.get(target_url)
 
             if response.status_code != 200:
-                output = f"Pokemon with name/id {id_} could not be found."
+                output = \
+                    f"Pokemon with name/id '{id_}' could not be found."
                 gui.abilities_label['text'] = output
                 gui.info_label['text'] = ""
                 gui.pokeimg_label['image'] = ""
             else:
                 pokemon = response.json()
 
-                info = "Name: %s\nHeight: %s m\nWeight: %s kg" % (pokemon['name'].title(), pokemon['height']/10, int(pokemon['weight']/10))
+                info = "Name: %s\nHeight: %s m\nWeight: %s kg" \
+                       % (pokemon['name'].title(), pokemon['height']/10,
+                          int(pokemon['weight']/10))
                 gui.info_label['text'] = info
 
                 img_url = pokemon['sprites']['front_default']
@@ -121,15 +133,13 @@ class APIHandler:
                 for index in range(len(pokemon['abilities'])):
                     abilities += f"\n    {index + 1}) "
                     abilities += "{}".format(
-                        pokemon['abilities'][index]['ability'][
-                            'name'].title())
+                        pokemon['abilities'][index]['ability']['name'].title())
 
                 gui.abilities_label['text'] = abilities
 
 
 def main():
-    """Main driver for the Pokedex after the user provides input
-    from the terminal via the CommandlineInterface."""
+    """Main driver for the Pokedex."""
     PokeGUI()
 
 
