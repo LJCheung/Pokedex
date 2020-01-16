@@ -58,6 +58,14 @@ class PokeGUI:
         self.button = tk.Button(self.lower_frame, text="Search", font=('Courier New', 15), command=lambda: APIHandler.get_data(self, self.entry.get()))
         self.button.place(relheight=1, relwidth=1)
 
+        # # container for error msg frame
+        # self.error_frame = tk.Frame(self.root)
+        # self.error_frame.place(relx=0.45, rely=0.29, relwidth=0.525, relheight=0.16, anchor='n')
+        #
+        # # label for error msg frame
+        # self.error_label = tk.Label(self.error_frame, font=('Courier New', 14), anchor=tk.NW, justify='left', wraplength=220)
+        # self.error_label.place(relwidth=1, relheight=1)
+
         # open window
         self.root.mainloop()
 
@@ -70,7 +78,7 @@ class APIHandler:
     url = "https://pokeapi.co/api/v2/pokemon/{}"
 
     @classmethod
-    def get_data(cls, gui: PokeGUI, id_: int):
+    def get_data(cls, gui: PokeGUI, id_):
         """
         Sends a GET request to the PokeAPI based on user provided input.
         If the request fails, then the response returned is a
@@ -88,6 +96,7 @@ class APIHandler:
                 output = f"Pokemon with name/id {id_} could not be found."
                 gui.abilities_label['text'] = output
                 gui.info_label['text'] = ""
+                gui.pokeimg_label['image'] = ""
             else:
                 pokemon = response.json()
 
