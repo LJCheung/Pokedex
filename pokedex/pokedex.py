@@ -11,6 +11,7 @@ class PokeGUI:
 
     def __init__(self):
         self.root = tk.Tk()
+        self.root.title('Pokedex')
 
         self.canvas = tk.Canvas(self.root, height=HEIGHT, width=WIDTH)
         self.canvas.pack()
@@ -124,28 +125,6 @@ class APIHandler:
                             'name'].title())
 
                 gui.abilities_label['text'] = abilities
-
-    @classmethod
-    def format_response(cls, pokemon):
-        try:
-            name = pokemon['name'].title()
-            height = pokemon['height']
-            weight = pokemon['weight']
-
-            abilities = ""
-            for index in range(len(pokemon['abilities'])):
-                abilities += f"\n    {index + 1}) "
-                abilities += "{}".format(
-                    pokemon['abilities'][index]['ability']['name'].title())
-
-            poke_image = pokemon['sprites']['front_default']
-            print(poke_image)
-
-            final_str = "Name: %s\nHeight: %s\nWeight: %s\nAbilities: %s" % (name, height, weight, abilities)
-        except:
-            final_str = 'The requested pokemon could not be found.'
-
-        return final_str
 
 
 def main():
