@@ -1,6 +1,7 @@
 import tkinter as tk
 import requests
 from PIL import ImageTk, Image
+from io import BytesIO
 
 HEIGHT = 729
 WIDTH = 410
@@ -20,13 +21,28 @@ class PokeGUI:
         self.img = ImageTk.PhotoImage(self.resized)
         self.canvas.create_image((0, 0), anchor=tk.NW, image=self.img)
 
-        # container for upperframe label
-        self.upper_frame = tk.Frame(self.root)
-        self.upper_frame.place(relx=0.45, rely=0.28, relwidth=0.53, relheight=0.21, anchor='n')
+        # container for pokemon image frame
+        self.pokeimg_frame = tk.Frame(self.root)
+        self.pokeimg_frame.place(relx=0.285, rely=0.28, relwidth=0.19, relheight=0.11, anchor='n')
 
-        # where the results will appear
-        self.label = tk.Label(self.upper_frame, font=('Courier New', 14), anchor=tk.NW, justify='left', img="25.jpg")
-        self.label.place(relwidth=1, relheight=1)
+        # label for pokemon image frame
+        self.pokeimg_label = None
+
+        # container for info frame
+        self.info_frame = tk.Frame(self.root)
+        self.info_frame.place(relx=0.55, rely=0.30, relwidth=0.32, relheight=0.1, anchor='n')
+
+        # label for info frame
+        self.info_label = tk.Label(self.info_frame, bg="red", font=('Courier New', 14), anchor=tk.NW, justify='left')
+        self.info_label.place(relwidth=1, relheight=1)
+
+        # container for abilities frame
+        self.abilities_frame = tk.Frame(self.root)
+        self.abilities_frame.place(relx=0.45, rely=0.39, relwidth=0.525, relheight=0.10, anchor='n')
+
+        # label for abilities frame
+        self.abilities_label = tk.Label(self.abilities_frame, bg="yellow", font=('Courier New', 14), anchor=tk.NW, justify='left', wraplength=220)
+        self.abilities_label.place(relwidth=1, relheight=1)
 
         # container for text entry field
         self.mid_frame = tk.Frame(self.root)
@@ -59,26 +75,50 @@ class APIHandler:
         Sends a GET request to the PokeAPI based on user provided input.
         If the request fails, then the response returned is a
         error message string that will be output later on.
+        :param gui: a PokeGUI
         :param id_: an int
         :return: a str or a dict
         """
-        target_url = APIHandler.url.format(id_)
-        response = requests.get(target_url)
 
-        if response.status_code != 200:
-            output = f"Pokemon with name/id {id_} could not be found."
-            # return f"{mode.title()} with name/id {id_} " \
-            #        f"could not be found."
-        else:
-            # debugging:
-            # print("Response object from aiohttp:\n", response)
-            # print("Response object type:\n", type(response))
-            pokemon = response.json()
-            output = cls.format_response(pokemon)
+        if id_ != "":
+            target_url = APIHandler.url.format(id_.lower())
+            response = requests.get(target_url)
 
-        gui.label['text'] = output
+            if response.status_code != 200:
+                output = f"Pokemon with name/id {id_} could not be found."
+                gui.abilities_label['text'] = output
+                gui.info_label['text'] = ""
+            else:
+                pokemon = response.json()
 
-            # return json_dict
+                info = "Name: %s\nHeight: %s m\nWeight: %s kg" % (pokemon['name'].title(), pokemon['height']/10, int(pokemon['weight']/10))
+                gui.info_label['text'] = info
+
+                img_url = pokemon['sprites']['front_default']
+                print(img_url)
+
+                img_response = requests.get(img_url)
+                img_data = img_response.content
+                # poke_img = ImageTk.PhotoImage(Image.open(BytesIO(img_data)))
+
+                poke_img = Image.open(BytesIO(img_data))
+                resized_img = poke_img.resize((80, 80), Image.ANTIALIAS)
+                poke_img = ImageTk.PhotoImage(resized_img)
+
+                gui.pokeimg_label = tk.Label(gui.pokeimg_frame, bg="blue", anchor='w', image=poke_img)
+
+                # must keep a reference per https://effbot.org/tkinterbook/photoimage.htm
+                gui.pokeimg_label.image = poke_img
+                gui.pokeimg_label.place(relwidth=1, relheight=1)
+
+                abilities = "Abilities:"
+                for index in range(len(pokemon['abilities'])):
+                    abilities += f"\n    {index + 1}) "
+                    abilities += "{}".format(
+                        pokemon['abilities'][index]['ability'][
+                            'name'].title())
+
+                gui.abilities_label['text'] = abilities
 
     @classmethod
     def format_response(cls, pokemon):
@@ -93,9 +133,10 @@ class APIHandler:
                 abilities += "{}".format(
                     pokemon['abilities'][index]['ability']['name'].title())
 
-            img = pokemon['sprites']['front_default']
+            poke_image = pokemon['sprites']['front_default']
+            print(poke_image)
 
-            final_str = "Name: %s\nHeight: %s\nWeight: %s\nAbilities: %s\nImg: %s" % (name, height, weight, abilities, img)
+            final_str = "Name: %s\nHeight: %s\nWeight: %s\nAbilities: %s" % (name, height, weight, abilities)
         except:
             final_str = 'The requested pokemon could not be found.'
 
