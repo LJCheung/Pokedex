@@ -1,3 +1,7 @@
+"""
+This module contains the implementation of the PokeGUI and Pokedex
+Classes.
+"""
 import tkinter as tk
 import requests
 from PIL import ImageTk, Image
@@ -8,8 +12,12 @@ WIDTH = 410
 
 
 class PokeGUI:
+    """This class represents the GUI for the Pokedex."""
 
     def __init__(self):
+        """
+        Initializes and generates the application window.
+        """
         self.root = tk.Tk()
         self.root.title('Pokedex')
 
@@ -30,7 +38,8 @@ class PokeGUI:
         # label for pokemon image frame
         self.pokeimg_label = tk.Label(self.pokeimg_frame, anchor='w',
                                       bg="#013df5")
-        # must keep a reference per https://effbot.org/tkinterbook/photoimage.htm
+        # must keep a reference per
+        # https://effbot.org/tkinterbook/photoimage.htm
         self.pokeimg_label.image = ""
         self.pokeimg_label.place(relwidth=1, relheight=1)
 
@@ -91,6 +100,20 @@ class APIHandler:
     url = "https://pokeapi.co/api/v2/pokemon/{}"
 
     @classmethod
+    def get_sprite(cls, img_url: str) -> ImageTk.PhotoImage:
+        """
+        Sends a GET request to access the pokemon sprite image.
+        :param img_url: a string
+        :return: a ImageTk.PhotoImage
+        """
+        img_response = requests.get(img_url)
+        img_data = img_response.content
+        poke_img = Image.open(BytesIO(img_data))
+        resized_img = poke_img.resize((80, 80), Image.ANTIALIAS)
+
+        return ImageTk.PhotoImage(resized_img)
+
+    @classmethod
     def get_data(cls, gui: PokeGUI, id_):
         """
         Sends a GET request to the PokeAPI based on user provided input.
@@ -114,27 +137,24 @@ class APIHandler:
             else:
                 pokemon = response.json()
 
+                # format name, height and weight
                 info = "Name: %s\nHeight: %s m\nWeight: %s kg" \
                        % (pokemon['name'].title(), pokemon['height']/10,
                           int(pokemon['weight']/10))
                 gui.info_label['text'] = info
 
+                # get sprite
                 img_url = pokemon['sprites']['front_default']
-                img_response = requests.get(img_url)
-                img_data = img_response.content
-                poke_img = Image.open(BytesIO(img_data))
-                resized_img = poke_img.resize((80, 80), Image.ANTIALIAS)
-                poke_img = ImageTk.PhotoImage(resized_img)
-
+                poke_img = cls.get_sprite(img_url)
                 gui.pokeimg_label['image'] = poke_img
                 gui.pokeimg_label.image = poke_img
 
+                # format abilities
                 abilities = "Abilities:"
                 for index in range(len(pokemon['abilities'])):
                     abilities += f"\n    {index + 1}) "
                     abilities += "{}".format(
                         pokemon['abilities'][index]['ability']['name'].title())
-
                 gui.abilities_label['text'] = abilities
 
 
